@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ * Installation file for AOL ON Video module.
+ */
+
+/*
+ * Implementation of hook_schema()
+ */
+function aol_on_schema(){
+  $schema['aol_player'] = array(
+      'description' => t('Store AOL ON Embed Video Player Setting'),
+      'fields' => array(
+          'pid' => array(
+              'type' => 'serial',
+              'unsigned' => true,
+              'size' => 'normal',
+              'not null' => true,
+              'description' => t('AOL Embeded player id'),
+          ),
+          'name' => array(
+              'type' => 'varchar',
+              'length' => 255,
+              'not null' => true,
+              'description' => t('Player Name'),
+          ),
+          'description' => array(
+              'type' => 'text',
+              'size' => 'normal',
+              'not null' => true,
+              'description' => t('Player description'),
+          ),
+          'player' => array(
+              'type' => 'varchar',
+              'length' => 50,
+              'not null' => true,
+              'description' => t('Player machine name'),
+          ),
+          'width' => array(
+              'type' => 'int',
+              'unsigned' => true,
+              'size' => 'normal',
+              'default' => 600,
+              'not null' => true,
+              'description' => t('AOL Embeded player width'),
+          ),
+          'height' => array(
+              'type' => 'int',
+              'unsigned' => true,
+              'size' => 'normal',
+              'default' => 338,
+              'not null' => true,
+              'description' => t('AOL Embeded player hegith'),
+          ),
+          'settings' => array(
+              'type' => 'blob',
+              'suze' => 'big',
+              'not null' => true,
+              'description' => t('AOL ON API Serialized Query string'),
+          ),
+      ),
+      'primary key' => array('pid'),
+      'unique keys' => array('player' => array('player')),
+  );
+  
+  return $schema;
+}
+
+/*
+ * 
+ * 
+ */
+/*
+function aol_on_field_schema($field){
+  if($field['type'] == 'aol_on'){
+    return array(
+      'columns' => array(
+        'video_id' => array(
+          'type' => 'varchar',
+          'length' => 15,
+          'not null' => FALSE
+        ),
+        'player' => array(
+          'type' => 'varchar',
+          'length' => 255,
+          'not null' => FALSE,
+        ),
+      ),
+      'indexes' => array(
+        'video_id' => array('video_id'),
+      ),
+    );
+  }
+}
+*/
+?>
