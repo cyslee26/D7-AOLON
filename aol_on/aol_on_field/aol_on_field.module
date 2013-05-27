@@ -1,0 +1,193 @@
+<?php
+function aol_on_field_init(){
+  drupal_add_css(drupal_get_path('module', 'aol_on_field') . '/aol_on_field.css', array('group' => CSS_DEFAULT, 'type' => 'file'));
+}
+/**
+ * Implements hook_field_info().
+ */
+function aol_on_field_field_info() {
+  return array(
+    'video_id' => array(
+      'label' => t('AOL Video ID'),
+      'description' => t('This field stores a height and width, and possibly depth.'),
+      'settings' => array(),
+      'instance_settings' => array(),
+      'default_widget' => 'aol_on_video_id',
+      'default_formatter' => 'aol_on_video_id_default',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_is_empty().
+ */
+function aol_on_field_field_is_empty($item, $field){
+  if($field['type'] == 'video_id'){
+    if($item['video_id'] == ''){
+      return true;
+    }
+  }
+  return false;
+}
+
+///////////////// Widgets ///////////////////////
+/**
+ * Implements hook_widget_info().
+ */
+function aol_on_field_field_widget_info() {
+  return array(
+    'aol_on_video_id' => array(
+      'label' => t('Simple Text field for AOL On Video Id'),
+      'description' => t('allow user to type in AOL ON Video ID manually'),
+      'field types' => array('video_id'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_DEFAULT,
+        'default value' => FIELD_BEHAVIOR_DEFAULT,
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_widget_form().
+ *
+ * Pseudo-hook.
+ */
+function aol_on_field_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $base = $element;
+  $element['video_id'] = array(
+    '#type' => 'textfield',
+    '#title' => t('AOL ON Video ID'),
+    '#default_value' => isset($items[$delta]['video_id']) ? $items[$delta]['video_id'] : 0,
+  );
+ 
+  return $element;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function aol_on_field_theme() {
+  $hooks = array();
+  
+  $hooks['aol_player'] = array(
+    'render element' => 'video',
+  );
+ 
+  return $hooks;
+}
+
+
+/**
+ * Formatter Section
+ */
+
+function aol_on_field_field_formatter_info(){
+  $formatters = array();
+  
+  $formatters['aol_on_video'] = array(
+    'label'       => t('AOL ON Video'),
+    'field types' => array('video_id'),
+    'settings'    => array(
+      'aol_player'   => 1, // get first player from aol_player table
+    )
+  );
+    
+  return $formatters;
+}
+
+
+/**
+ * Implementation of hook_field_formatter_settings_form().
+ */
+
+function aol_on_field_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
+  $display = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  
+  $element = array();
+  switch ($display['type']) {
+    case 'aol_on_video':
+      $element['aol_player'] = array(
+          '#title' => t('Player'),
+          '#type' => 'select',
+          '#default_value' => isset($settings['aol_player']) ? $settings['aol_player'] : 1,
+          '#options' => aol_on_player_list(),
+      );
+    
+      break;
+  }
+  
+  return $element;
+}
+
+/**
+ * Implements hook_field_formatter_settings_summary()
+ */
+
+function aol_on_field_field_formatter_settings_summary($field, $instance, $view_mode) {
+  $display  = $instance['display'][$view_mode];
+  $settings = $display['settings'];
+  $players = aol_on_player_list();
+  switch ($display['type']) {
+    case 'aol_on_video':
+      $summary = t('Player Name: @PLAYER', array('@PLAYER' => $players[$settings['aol_player']])); // we use t() for translation and placeholders to guard against attacks
+      break;
+  }
+ 
+  return $summary;
+}
+
+/**
+ * Implements hook_field_formatter_view(). 
+ */
+
+function aol_on_field_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
+  
+  $elements = array(0 => array());
+  switch ($display['type']) {
+    case 'aol_on_video':
+      $player_data = aol_on_player_load($display['settings']['aol_player']); 
+      $query_str = build_aol_js_query($player_data);
+     
+      $elements[0]['player'] = array(
+          '#theme' => 'aol_player',
+          'items'  => array(),
+      );
+      
+      foreach($items as $delta => $item) {
+        $elements[0]['player']['items'][$delta] = array(
+          'entity_type'   => $entity_type,
+          'field_name'    => $field['field_name'],
+          'sid'           => variable_get("aol_on_sid", 1126),
+          'video_id'      => $item['video_id'],
+          'player_query'  => $query_str,
+          'player_width'  => $player_data->width,
+          'player_height' => $player_data->height,
+        );
+      }
+      break;
+  }
+ 
+  return $elements;
+}
+
+
+/**
+ * Theme function for 'aol_on_video' text field formatter.
+ */
+
+function theme_aol_player($attributes) {
+ $sid      = $attributes['video']['items'][0]['sid'];
+ $video_id = $attributes['video']['items'][0]['video_id'];
+ $query    = $attributes['video']['items'][0]['player_query'];
+ $width    = $attributes['video']['items'][0]['player_width'];
+ $height   = $attributes['video']['items'][0]['player_height'];
+ 
+ $output = '<div class="aol-player">
+     <script type="text/javascript" src="http://pshared.5min.com/Scripts/PlayerSeed.js?sid='.$sid.'&amp;playList='.$video_id.'&amp;'.$query.'"></script>
+ </div>';
+  
+  return $output;
+}
+

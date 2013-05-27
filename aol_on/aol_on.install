@@ -5,6 +5,7 @@
  * Installation file for AOL ON Video module.
  */
 
+
 /*
  * Implementation of hook_schema()
  */
@@ -67,31 +68,4 @@ function aol_on_schema(){
   return $schema;
 }
 
-/*
- * 
- * 
- */
-/*
-function aol_on_field_schema($field){
-  if($field['type'] == 'aol_on'){
-    return array(
-      'columns' => array(
-        'video_id' => array(
-          'type' => 'varchar',
-          'length' => 15,
-          'not null' => FALSE
-        ),
-        'player' => array(
-          'type' => 'varchar',
-          'length' => 255,
-          'not null' => FALSE,
-        ),
-      ),
-      'indexes' => array(
-        'video_id' => array('video_id'),
-      ),
-    );
-  }
-}
-*/
 ?>

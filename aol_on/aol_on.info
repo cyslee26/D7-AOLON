@@ -1,10 +1,7 @@
 core = "7.x"
 
-description = "AOL ON Video Embed Player Management"
-name = "AOL ON Video Player"
+description = "AOL ON Video Content Fields and Embed Video Player  Management"
+name = "AOL ON Video"
 package = "Media"
 project = "aol_on"
 version = "7.x-1.0"
-
-dependencies[] = field
-dependencies[] = entity

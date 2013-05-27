@@ -1,0 +1,7 @@
+name = AOL ON Video field
+description = A field store the video id
+core = "7.x"
+version = "7.x-1.0"
+package = Media
+files[] = aol_on_field.module
+dependencies[] = aol_on

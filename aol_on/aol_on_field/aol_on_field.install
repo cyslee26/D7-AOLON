@@ -1,0 +1,24 @@
+<?php
+/**
+ * Created by JetBrains PhpStorm.
+ * User: clee
+ * Date: 5/8/13
+ * Time: 5:55 PM
+ * To change this template use File | Settings | File Templates.
+ */
+/*
+ * hook_field_schema
+ */
+
+function aol_on_field_field_schema($field) {
+  $schema = array();
+  $schema['columns']['video_id'] = array(
+      'type' => 'varchar',
+      'length' => 25,
+      'not null' => true,
+  );
+  
+      
+  return $schema;
+}
+

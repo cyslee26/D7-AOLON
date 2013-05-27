@@ -1,0 +1,12 @@
+/* 
+    Document   : aol_on_field
+    Created on : May 26, 2013, 11:25:28 PM
+    Author     : clee
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+.aol-player{
+    min-height: 400px;
+    min-width: 600px;
+}

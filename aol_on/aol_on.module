@@ -1,7 +1,9 @@
 <?php 
+
 /*
  * hook_menu()
  */
+
 function aol_on_menu(){
   $items['admin/config/media/aol_on'] = array(
     'title'             => 'AOL ON Video Settings',
@@ -49,9 +51,6 @@ function aol_on_menu(){
   return $items;
 }
 
-/*
-
- */
 function aol_on_player_load($pid){
   if(is_numeric($pid)){
     $player = db_query('SELECT * FROM {aol_player} WHERE pid = :pid', array(':pid' => $pid))->fetch();
@@ -105,7 +104,6 @@ function aol_on_player_load_all() {
   return db_query('SELECT pid, name, player, width, height FROM {aol_player} ORDER BY name')
     ->fetchAll();
 }
-
 function aol_on_player_list() {
   return db_query('SELECT pid, name FROM {aol_player} ORDER BY name')
   ->fetchAllKeyed(0, 1);
@@ -469,11 +467,12 @@ function aol_on_player_form_submit($form, &$form_state){
 }
 
 /* Setting SID value */
+
 function aol_on_setting_form(){
   $form['aol_on_sid'] = array(
       '#type'  => 'textfield',
       '#title' => 'AOL ON Syndicator ID',
-      '#description' => t('AOL ON Syndicator ID value.'), 
+      '#description' => t('AOL ON Syndicator ID value.  This is requirement for all video embeds on AMI site.'), 
       '#size'  => 10,
       '#maxlength' => 10,
       '#default_value' => variable_get("aol_on_sid", 1126),
@@ -501,124 +500,6 @@ function aol_on_player_delete_form_submit($form, &$form_state) {
   $form_state['redirect'] = 'admin/config/media/aol_on/players';
 }
 
-/**
- * Formatter Section
- */
-function aol_on_field_formatter_info(){
-  $formatters = array();
-  
-  $formatters['aol_on_video'] = array(
-    'label'       => t('AOL ON Video'),
-    'field types' => array('text'),
-    'settings'    => array(
-      'aol_player'   => 1, // get first player from aol_player table
-    )
-  );
-    
-  return $formatters;
-}
-/**
- * Implementation of hook_field_formatter_settings_form().
- */
-function aol_on_field_formatter_settings_form($field, $instance, $view_mode, $form, &$form_state) {
-  $display = $instance['display'][$view_mode];
-  $settings = $display['settings'];
-  
-  $element = array();
- 
-  switch ($display['type']) {
-    case 'aol_on_video':
-      $element['aol_player'] = array(
-          '#title' => t('Player'),
-          '#type' => 'select',
-          '#default_value' => isset($settings['aol_player']) ? $settings['aol_player'] : 1,
-          '#options' => aol_on_player_list(),
-      );
-    
-      break;
-  }
-  
-  return $element;
-}
-
-/**
- * Implements hook_field_formatter_settings_summary()
- */
-function aol_on_field_formatter_settings_summary($field, $instance, $view_mode) {
-  $display  = $instance['display'][$view_mode];
-  $settings = $display['settings'];
-  $players = aol_on_player_list();
-  switch ($display['type']) {
-    case 'aol_on_video':
-      $summary = t('Player Name: @PLAYER', array('@PLAYER' => $players[$settings['aol_player']])); // we use t() for translation and placeholders to guard against attacks
-      break;
-  }
- 
-  return $summary;
-} 
-/**
- * Implements hook_field_formatter_view(). 
- */
-function aol_on_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display){
-  
-  $elements = array(0 => array());
-  switch ($display['type']) {
-    case 'aol_on_video':
-      $player_data = aol_on_player_load($display['settings']['aol_player']); 
-      $query_str = build_aol_js_query($player_data);
-     
-      $elements[0]['player'] = array(
-          '#theme' => 'aol_player',
-          'items'  => array(),
-      );
-      
-      foreach($items as $delta => $item) {
-        $elements[0]['player']['items'][$delta] = array(
-          'entity_type'   => $entity_type,
-          'field_name'    => $field['field_name'],
-          'sid'           => variable_get("aol_on_sid", 1126),
-          'video_id'      => $item['value'],
-          'player_query'  => $query_str,
-          'player_width'  => $player_data->width,
-          'player_height' => $player_data->height,
-        );
-      }
-      break;
-  }
- 
-  return $elements;
-}
-
-/**
- * Implements hook_theme().
- */
-function aol_on_theme() {
-  $hooks = array();
-  
-  $hooks['aol_player'] = array(
-    'render element' => 'video',
-  );
- 
-  return $hooks;
-}
-
-/**
- * Theme function for 'aol_on_video' text field formatter.
- */
-
-function theme_aol_player($attributes) {
- $sid      = $attributes['video']['items'][0]['sid'];
- $video_id = $attributes['video']['items'][0]['video_id'];
- $query    = $attributes['video']['items'][0]['player_query'];
- $width    = $attributes['video']['items'][0]['player_width'];
- $height   = $attributes['video']['items'][0]['player_height'];
- 
- $output = '<div class="aol-player" style="margin:0 auto;width:'.$width.'px;height:'.$height.'px;">
-     <script type="text/javascript" src="http://pshared.5min.com/Scripts/PlayerSeed.js?sid='.$sid.'&amp;playList='.$video_id.'&amp;'.$query.'"></script>
- </div>';
-  
-  return $output;
-}
 
 /**
  * 
@@ -636,5 +517,7 @@ function build_aol_js_query($player_data){
   
   return $query;
 }
+
+
 
 ?>
